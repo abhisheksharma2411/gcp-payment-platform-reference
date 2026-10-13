@@ -1,0 +1,244 @@
+{
+  "scenarios": [
+    {
+      "name": "web-checkout-happy",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 1,
+        "exceptions": 0,
+        "lines": 1
+      }
+    },
+    {
+      "name": "pos-decline",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 0,
+        "exceptions": 0,
+        "lines": 0
+      }
+    },
+    {
+      "name": "timeout-before-send",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 0,
+        "exceptions": 0,
+        "lines": 0
+      }
+    },
+    {
+      "name": "ambiguous-timeout-lookup",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 1,
+        "exceptions": 0,
+        "lines": 1
+      }
+    },
+    {
+      "name": "ambiguous-timeout-callback",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 1,
+        "exceptions": 0,
+        "lines": 1
+      }
+    },
+    {
+      "name": "partial-capture-and-refund",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 3,
+        "exceptions": 0,
+        "lines": 3
+      }
+    },
+    {
+      "name": "full-reversal",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 2,
+        "exceptions": 0,
+        "lines": 2
+      }
+    },
+    {
+      "name": "settlement-mismatch",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 0,
+        "exceptions": 1,
+        "lines": 1
+      }
+    },
+    {
+      "name": "restart-mid-operation",
+      "codes": [],
+      "findings": [],
+      "settlement": {
+        "matched": 1,
+        "exceptions": 0,
+        "lines": 1
+      }
+    },
+    {
+      "name": "cross-tenant-denied",
+      "codes": [],
+      "findings": [],
+      "settlement": null
+    }
+  ],
+  "controls": [
+    {
+      "name": "authority-violation",
+      "expected": [
+        "S01_AUTHORITY_WRITE_VIOLATION"
+      ],
+      "actual": [
+        "S01_AUTHORITY_WRITE_VIOLATION"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "unresolved-callback",
+      "expected": [
+        "S02_UNRESOLVED_PROVIDER_REFERENCE"
+      ],
+      "actual": [
+        "S02_UNRESOLVED_PROVIDER_REFERENCE"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "posting-without-evidence",
+      "expected": [
+        "S03_POSTING_WITHOUT_EVIDENCE"
+      ],
+      "actual": [
+        "S03_POSTING_WITHOUT_EVIDENCE"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "evidence-without-posting",
+      "expected": [
+        "S04_EVIDENCE_WITHOUT_POSTING"
+      ],
+      "actual": [
+        "S04_EVIDENCE_WITHOUT_POSTING"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "stale-read",
+      "expected": [
+        "S05_STALE_READ_BEYOND_WINDOW"
+      ],
+      "actual": [
+        "S05_STALE_READ_BEYOND_WINDOW"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "unbalanced-journal",
+      "expected": [
+        "S06_UNBALANCED_JOURNAL"
+      ],
+      "actual": [
+        "S06_UNBALANCED_JOURNAL"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "illegal-transition",
+      "expected": [
+        "S07_ILLEGAL_LIFECYCLE_TRANSITION"
+      ],
+      "actual": [
+        "S07_ILLEGAL_LIFECYCLE_TRANSITION"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "cross-tenant-read",
+      "expected": [
+        "S08_CROSS_TENANT_ACCESS"
+      ],
+      "actual": [
+        "S08_CROSS_TENANT_ACCESS"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "cardholder-data-leak",
+      "expected": [
+        "S09_CARDHOLDER_DATA_OUTSIDE_VAULT"
+      ],
+      "actual": [
+        "S09_CARDHOLDER_DATA_OUTSIDE_VAULT"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "settlement-unexplained",
+      "expected": [
+        "S10_SETTLEMENT_UNEXPLAINED"
+      ],
+      "actual": [
+        "S10_SETTLEMENT_UNEXPLAINED"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    },
+    {
+      "name": "posted-amount-mismatch",
+      "expected": [
+        "S11_POSTED_AMOUNT_MISMATCH"
+      ],
+      "actual": [
+        "S11_POSTED_AMOUNT_MISMATCH"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": true
+    },
+    {
+      "name": "unrecorded-provider-effect",
+      "expected": [
+        "S12_UNRECORDED_PROVIDER_EFFECT"
+      ],
+      "actual": [
+        "S12_UNRECORDED_PROVIDER_EFFECT"
+      ],
+      "exact": true,
+      "ledgerSaysBalanced": null
+    }
+  ],
+  "rejectedControl": {
+    "name": "everything-broken",
+    "actual": [
+      "S01_AUTHORITY_WRITE_VIOLATION",
+      "S05_STALE_READ_BEYOND_WINDOW",
+      "S06_UNBALANCED_JOURNAL",
+      "S08_CROSS_TENANT_ACCESS",
+      "S09_CARDHOLDER_DATA_OUTSIDE_VAULT"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "payment-platform-reference",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "An integrated payment platform and a twelve-code seam auditor for the places where two correct components meet. Companion lab for Article 11.",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "test": "node --test tests/identity.test.ts tests/lifecycle.test.ts tests/provider.test.ts tests/callbacks.test.ts tests/ledger.test.ts tests/settlement.test.ts tests/security.test.ts tests/seams.test.ts",
+    "report": "node scripts/report.ts",
+    "seams": "node scripts/seams.ts --controls",
+    "happy": "node scripts/happy.ts",
+    "inject": "node scripts/inject.ts",
+    "verify": "make verify",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0" }
+}

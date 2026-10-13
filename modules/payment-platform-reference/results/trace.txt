@@ -1,0 +1,26 @@
+T+00d00:00:00.001  state              entity=intent id=int_0001 tenantId=tnt_alpha from=NONE to=CREATED writer=payment-api field=intent.status
+T+00d00:00:00.002  field              name=vault.tokenRef value=tok_synthetic_7f21 writer=card-vault
+T+00d00:00:00.003  command            operationId=op_auth_1 tenantId=tnt_alpha intentId=int_0001 operationKind=AUTHORIZE amountMinor=4599 currency=EUR requestHash=18c5ba55f21b2a66707eb2bd34ca2b81ae1cdc593a8ea1b49893a00cce4ef173 decision=FIRST
+T+00d00:00:00.004  state              entity=operation id=op_auth_1 tenantId=tnt_alpha from=RECEIVED to=IN_FLIGHT writer=payment-api field=operation.state
+T+00d00:00:00.005  provider_call      operationId=op_auth_1 endpointRegion=europe-west1 idempotencyKey=op_auth_1 outcome=TIMEOUT_AFTER_SEND providerRef=null
+T+00d00:00:00.006  state              entity=operation id=op_auth_1 tenantId=tnt_alpha from=IN_FLIGHT to=OUTCOME_UNKNOWN writer=payment-api field=operation.state
+T+00d00:00:00.007  event              eventType=payment.outcome_unknown operationId=op_auth_1 intentId=int_0001 sequence=1
+T+00d00:00:00.008  provider_call      operationId=op_auth_1 endpointRegion=europe-west1 idempotencyKey=op_auth_1 outcome=APPROVED providerRef=prov_0001
+T+00d00:00:00.009  provider_effect    providerRef=prov_0001 objectId=obj_0001 operationKind=AUTHORIZE amountMinor=4599 currency=EUR endpointRegion=europe-west1 attributedOperationId=op_auth_1
+T+00d00:00:00.010  state              entity=operation id=op_auth_1 tenantId=tnt_alpha from=OUTCOME_UNKNOWN to=SUCCEEDED writer=payment-api field=operation.state
+T+00d00:00:00.011  state              entity=intent id=int_0001 tenantId=tnt_alpha from=CREATED to=AUTHORIZED writer=payment-api field=intent.status
+T+00d00:00:00.012  event              eventType=payment.authorize_succeeded operationId=op_auth_1 intentId=int_0001 sequence=2
+T+00d00:00:00.013  command            operationId=op_cap_1 tenantId=tnt_alpha intentId=int_0001 operationKind=CAPTURE amountMinor=4599 currency=EUR requestHash=42b24f64c821cb91ed6a9b3b0a2a2fd9c9dc8e07316edc889b42dbdee0412bde decision=FIRST
+T+00d00:00:00.014  state              entity=operation id=op_cap_1 tenantId=tnt_alpha from=RECEIVED to=IN_FLIGHT writer=payment-api field=operation.state
+T+00d00:00:00.015  provider_call      operationId=op_cap_1 endpointRegion=europe-west1 idempotencyKey=op_cap_1 outcome=APPROVED providerRef=prov_0002
+T+00d00:00:00.016  provider_effect    providerRef=prov_0002 objectId=obj_0002 operationKind=CAPTURE amountMinor=4599 currency=EUR endpointRegion=europe-west1 attributedOperationId=op_cap_1
+T+00d00:00:00.017  state              entity=operation id=op_cap_1 tenantId=tnt_alpha from=IN_FLIGHT to=SUCCEEDED writer=payment-api field=operation.state
+T+00d00:00:00.018  posting            postingId=post_0001 operationId=op_cap_1 tenantId=tnt_alpha account=provider_receivable direction=DEBIT amountMinor=4599 currency=EUR writer=ledger field=ledger.posting
+T+00d00:00:00.019  posting            postingId=post_0002 operationId=op_cap_1 tenantId=tnt_alpha account=merchant_revenue direction=CREDIT amountMinor=4599 currency=EUR writer=ledger field=ledger.posting
+T+00d00:00:00.020  state              entity=intent id=int_0001 tenantId=tnt_alpha from=AUTHORIZED to=CAPTURED writer=payment-api field=intent.status
+T+00d00:00:00.021  event              eventType=payment.capture_succeeded operationId=op_cap_1 intentId=int_0001 sequence=3
+T+00d00:00:00.022  settlement_line    providerRef=prov_0002 grossMinor=4599 feeMinor=114 netMinor=4485 currency=EUR
+T+00d00:00:00.023  settlement_outcome providerRef=prov_0002 matched=true exceptionCode=null
+T+00d00:00:00.024  posting            postingId=post_0003 operationId=settle_prov_0002 tenantId=settlement account=bank_cash direction=DEBIT amountMinor=4485 currency=EUR writer=ledger field=ledger.posting
+T+00d00:00:00.025  posting            postingId=post_0004 operationId=settle_prov_0002 tenantId=settlement account=provider_fees direction=DEBIT amountMinor=114 currency=EUR writer=ledger field=ledger.posting
+T+00d00:00:00.026  posting            postingId=post_0005 operationId=settle_prov_0002 tenantId=settlement account=provider_receivable direction=CREDIT amountMinor=4599 currency=EUR writer=ledger field=ledger.posting
