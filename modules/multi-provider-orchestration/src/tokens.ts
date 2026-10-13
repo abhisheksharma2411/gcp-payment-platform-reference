@@ -39,6 +39,11 @@ export type TokenVerdict =
    *  travel. The token is portable; this provider is not provisioned. */
   | "REFUSED_NOT_PROVISIONED";
 
+/** The one guard that can be removed here. Registered for the same reason. */
+export type TokenMutation = "tokens-portable-across-providers";
+
+export const TOKEN_MUTATIONS: readonly TokenMutation[] = ["tokens-portable-across-providers"];
+
 export interface TokenDecision {
   readonly verdict: TokenVerdict;
   readonly reason: string;
@@ -55,7 +60,7 @@ export interface TokenDecision {
 export function presentable(
   token: Token,
   receiving: CapabilityContract,
-  mutation?: "tokens-portable-across-providers",
+  mutation?: TokenMutation,
 ): TokenDecision {
   if (mutation === "tokens-portable-across-providers") {
     return { verdict: "ACCEPTED", reason: "guard removed (negative control)" };

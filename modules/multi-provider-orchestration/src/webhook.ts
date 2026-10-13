@@ -47,6 +47,15 @@ function outcomeOf(rawCode: string): AttemptOutcome {
  * a notification from each provider it was attempted against, and those are
  * two facts, not one fact twice.
  */
+/**
+ * The one guard that can be removed here, named so the completeness control
+ * can see it. A removable guard that is not in a registry is a guard whose
+ * control can quietly go missing.
+ */
+export type WebhookMutation = "dedupe-on-operation-only";
+
+export const WEBHOOK_MUTATIONS: readonly WebhookMutation[] = ["dedupe-on-operation-only"];
+
 export class WebhookInbox {
   readonly #seen = new Set<string>();
   readonly #events: NormalisedEvent[] = [];
@@ -54,8 +63,8 @@ export class WebhookInbox {
   /** Negative control only: key on the operation, losing one provider's account. */
   readonly #dedupeOnOperationOnly: boolean;
 
-  constructor(dedupeOnOperationOnly = false) {
-    this.#dedupeOnOperationOnly = dedupeOnOperationOnly;
+  constructor(mutation?: WebhookMutation) {
+    this.#dedupeOnOperationOnly = mutation === "dedupe-on-operation-only";
   }
 
   receive(w: InboundWebhook): Acceptance {

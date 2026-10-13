@@ -9,9 +9,10 @@ import { Orchestrator, MUTATIONS, type Mutation } from "../src/orchestrator.ts";
 import { SimulatedProvider, ACQUIRER_A, ACQUIRER_B } from "../src/providers.ts";
 import { POLICY_2026_10_1 } from "../src/policy.ts";
 import { HealthRegistry } from "../src/health.ts";
-import { WebhookInbox } from "../src/webhook.ts";
+import { WebhookInbox, WEBHOOK_MUTATIONS } from "../src/webhook.ts";
 import type { PaymentRequest } from "../src/types.ts";
 import type { ProviderMode } from "../src/providers.ts";
+import { TOKEN_MUTATIONS } from "../src/tokens.ts";
 
 const T0 = Date.UTC(2026, 0, 5);
 const req = (o: Partial<PaymentRequest> = {}): PaymentRequest => ({
@@ -74,7 +75,7 @@ test("N3 counting declines as failures opens the circuit on a refused merchant",
 });
 
 test("N4 de-duplicating webhooks on the operation alone loses a provider's account", () => {
-  const broken = new WebhookInbox(true);
+  const broken = new WebhookInbox("dedupe-on-operation-only");
   broken.receive({ provider: "acquirer-a", eventId: "a-1", operationId: "op-9", rawCode: "APPROVED", atMs: T0 });
   broken.receive({ provider: "acquirer-b", eventId: "b-1", operationId: "op-9", rawCode: "APPROVED", atMs: T0 });
 
@@ -88,14 +89,27 @@ test("N4 de-duplicating webhooks on the operation alone loses a provider's accou
   assert.deepEqual(correct.doubleAuthorizations(), ["op-9"]);
 });
 
-test("N5 every mutation is exercised by a named control", () => {
-  // If a mutation is added without a control, this fails rather than letting
-  // it sit untested.
-  assert.deepEqual([...MUTATIONS].sort(), [
-    "allow-failover-after-unknown",
-    "declines-open-circuit",
-    "shared-key-across-providers",
+test("N5 every removable guard in the module is exercised by a named control", () => {
+  // The registry this used to check held only the orchestrator's mutations,
+  // so a guard removal added in webhook.ts or tokens.ts would not have failed
+  // it. A completeness check covering one of three registries is not a
+  // completeness check. The inventory now spans all three.
+  const inventory = [
+    ...MUTATIONS,
+    ...WEBHOOK_MUTATIONS,
+    ...TOKEN_MUTATIONS,
+  ].sort();
+
+  assert.deepEqual(inventory, [
+    "allow-failover-after-unknown",   // N1  -> src/orchestrator.ts
+    "declines-open-circuit",          // N3  -> src/orchestrator.ts
+    "dedupe-on-operation-only",       // N4  -> src/webhook.ts
+    "shared-key-across-providers",    // N2  -> src/orchestrator.ts
+    "tokens-portable-across-providers", // NC-T -> src/tokens.ts
   ]);
+  // Five guards, five controls. Adding a sixth anywhere fails here until it
+  // has one.
+  assert.equal(new Set(inventory).size, 5);
 });
 
 test("N6 the harness can report a failure", () => {
