@@ -1,0 +1,140 @@
+{
+  "generatedFrom": "scripts/report.ts",
+  "evaluatedAt": "2026-01-05T00:00:00.000Z",
+  "note": "Simulated result. Deterministic. No cloud project, no credentials, no network. Neither provider reproduces any real provider's API or behaviour.",
+  "capabilityDivergence": [
+    "methods: acquirer-a only [wallet], acquirer-b only [bank_transfer]",
+    "currencies: acquirer-a only [GBP,USD], acquirer-b only [SEK]",
+    "countries: acquirer-a only [FR,GB,US], acquirer-b only [SE]",
+    "separateCapture: acquirer-a=true, acquirer-b=false",
+    "honoursIdempotencyKey: acquirer-a=true, acquirer-b=false",
+    "supportsQuery: acquirer-a=true, acquirer-b=false",
+    "timeoutMs: acquirer-a=8000, acquirer-b=20000"
+  ],
+  "failoverTable": [
+    {
+      "outcome": "NOT_SENT",
+      "verdict": "SAFE"
+    },
+    {
+      "outcome": "DECLINED",
+      "verdict": "ALLOWED_DECLINED"
+    },
+    {
+      "outcome": "AUTHORIZED",
+      "verdict": "BLOCKED_AUTHORIZED"
+    },
+    {
+      "outcome": "UNKNOWN",
+      "verdict": "BLOCKED_UNKNOWN"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "both authorize",
+      "operations": 50,
+      "attempts": 50,
+      "authorizations": 50,
+      "failoversAllowed": 0,
+      "failoversBlocked": 0,
+      "settled": {
+        "AUTHORIZED": 50,
+        "DECLINED": 0,
+        "UNRESOLVED": 0,
+        "NO_ROUTE": 0
+      }
+    },
+    {
+      "scenario": "first unavailable",
+      "operations": 50,
+      "attempts": 53,
+      "authorizations": 50,
+      "failoversAllowed": 3,
+      "failoversBlocked": 0,
+      "settled": {
+        "AUTHORIZED": 50,
+        "DECLINED": 0,
+        "UNRESOLVED": 0,
+        "NO_ROUTE": 0
+      }
+    },
+    {
+      "scenario": "first declines",
+      "operations": 50,
+      "attempts": 50,
+      "authorizations": 0,
+      "failoversAllowed": 0,
+      "failoversBlocked": 0,
+      "settled": {
+        "AUTHORIZED": 0,
+        "DECLINED": 50,
+        "UNRESOLVED": 0,
+        "NO_ROUTE": 0
+      }
+    },
+    {
+      "scenario": "first times out",
+      "operations": 50,
+      "attempts": 50,
+      "authorizations": 47,
+      "failoversAllowed": 0,
+      "failoversBlocked": 3,
+      "settled": {
+        "AUTHORIZED": 47,
+        "DECLINED": 0,
+        "UNRESOLVED": 3,
+        "NO_ROUTE": 0
+      }
+    }
+  ],
+  "doubleCharge": [
+    {
+      "guard": "in place",
+      "operations": 25,
+      "attempts": 25,
+      "doubleAuthorizations": 0,
+      "blockedFailovers": 3
+    },
+    {
+      "guard": "removed",
+      "operations": 25,
+      "attempts": 28,
+      "doubleAuthorizations": 3,
+      "blockedFailovers": 0
+    }
+  ],
+  "circuitUnderFlapping": {
+    "transitions": 12,
+    "observed": [
+      "OPEN",
+      "HALF_OPEN",
+      "CLOSED",
+      "OPEN",
+      "HALF_OPEN",
+      "CLOSED",
+      "OPEN",
+      "HALF_OPEN",
+      "CLOSED",
+      "OPEN",
+      "HALF_OPEN",
+      "CLOSED"
+    ]
+  },
+  "negativeControls": [
+    {
+      "removed": "allow-failover-after-unknown",
+      "attemptsOnTimeout": 2,
+      "detectedByControl": true
+    },
+    {
+      "removed": "shared-key-across-providers",
+      "attemptsOnTimeout": 1,
+      "detectedByControl": true
+    },
+    {
+      "removed": "declines-open-circuit",
+      "attemptsOnTimeout": 1,
+      "detectedByControl": true
+    }
+  ]
+}

@@ -13,7 +13,8 @@ Part of **Building Reliable Financial Systems on Google Cloud**.
 
 | Module | Article | Proves |
 |---|---|---|
-| `payment-platform-reference` | 11 | One synthetic payment from request through provider effect, ledger posting, settlement evidence and reconciliation, audited by twelve cross-component seam checks with one negative control each |
+| [`payment-platform-reference`](modules/payment-platform-reference) | 11 — Production-grade payment platform | The seams: where two individually correct components disagree, and what the end-to-end flow needs that no single article specifies |
+| [`multi-provider-orchestration`](modules/multi-provider-orchestration) | 16 — Payment orchestration across providers | Failover is safe only from an outcome that proves the provider has nothing recorded; removing that one condition produces double authorizations |
 
 Further modules are added as their articles are written. Each module is
 self-contained and exposes the same entry point:

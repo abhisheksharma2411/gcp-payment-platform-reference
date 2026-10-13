@@ -1,0 +1,16 @@
+{
+  "name": "multi-provider-orchestration",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Routing, failover, capability contracts and the one boundary where failover is safe. Companion lab for Article 16.",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "test": "node --test tests/capability.test.ts tests/routing.test.ts tests/failover.test.ts tests/health.test.ts tests/webhook.test.ts tests/negative-controls.test.ts",
+    "report": "node scripts/report.ts",
+    "verify": "make verify",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0" }
+}
