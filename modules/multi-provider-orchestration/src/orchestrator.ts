@@ -54,6 +54,23 @@ export interface OperationResult {
 }
 
 /**
+ * What reconciliation did with an unresolved operation.
+ *
+ * Two outcomes, and the second is not a failure of the code. A provider
+ * without a lookup cannot be asked, so the operation is handed to a human
+ * process with the provider and the key it needs. An orchestrator that
+ * reported only "cleared" would be hiding the cases that cost money.
+ */
+export type Reconciliation =
+  | { readonly kind: "CLEARED"; readonly attempt: Attempt }
+  | {
+      readonly kind: "ESCALATED";
+      readonly provider: string;
+      readonly providerKey: string;
+      readonly reason: string;
+    };
+
+/**
  * The failover decision, in one place.
  *
  * `NOT_SENT` is the only outcome that permits moving to another provider
@@ -84,7 +101,7 @@ export class Orchestrator {
   readonly contracts: readonly CapabilityContract[];
   readonly providers: ReadonlyMap<string, SimulatedProvider>;
   readonly health: HealthRegistry;
-  readonly options: OrchestratorOptions;
+  options: OrchestratorOptions;
   readonly tally: Tally = {
     requests: 0, attempts: 0, authorizations: 0,
     failoversAllowed: 0, failoversBlocked: 0,
@@ -212,6 +229,47 @@ export class Orchestrator {
       providerRef: found.providerRef, rawCode: found.rawCode,
       normalisedReason: normalise(found.rawCode), atMs: nowMs,
     };
+  }
+
+  /**
+   * Clear an unresolved operation, or escalate it.
+   *
+   * Where the contract offers a lookup, the provider is asked and the
+   * operation settles. Where it does not, nothing in this process can settle
+   * it, and saying so explicitly is the point: the unknown outcome becomes a
+   * named item owned by somebody, rather than a row that quietly stays
+   * UNRESOLVED until a statement contradicts it days later.
+   */
+  reconcile(operationId: string, provider: string, nowMs: number): Reconciliation {
+    const key = providerKey(operationId, provider);
+    const p = this.providers.get(provider);
+    if (p !== undefined && p.contract.supportsQuery) {
+      const settled = this.resolve(operationId, provider, nowMs);
+      if (settled !== null) return { kind: "CLEARED", attempt: settled };
+    }
+    return {
+      kind: "ESCALATED",
+      provider,
+      providerKey: key,
+      reason: p === undefined
+        ? "unknown provider"
+        : p.contract.supportsQuery
+          ? "lookup returned nothing"
+          : `${provider} offers no lookup; settles on the next statement`,
+    };
+  }
+
+  /**
+   * Change the routing policy while operations are in flight.
+   *
+   * Safe only because selection is sticky. A new policy governs operations
+   * that have not yet reached a provider; one that has keeps the provider it
+   * reached, under the version recorded in its audit trail. Without that, a
+   * policy deploy would re-route live retries -- which is a second operation
+   * at a second provider, dressed as a configuration change.
+   */
+  setPolicy(policy: RoutingPolicy): void {
+    this.options = { ...this.options, policy };
   }
 
   audit(): readonly RoutingDecision[] {

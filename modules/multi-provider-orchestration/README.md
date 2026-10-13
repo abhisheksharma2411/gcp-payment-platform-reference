@@ -66,15 +66,16 @@ src/providers.ts      two invented providers with different capabilities
 src/health.ts         circuit breaking with hysteresis and staleness
 src/orchestrator.ts   routing, attempting, and the failover decision
 src/webhook.ts        normalisation that keeps the provider's own code
-tests/                48 tests, including 7 negative controls
+src/tokens.ts         provider-bound tokens, portability, migration limits
+tests/                61 tests, with a negative control for every guard
 scripts/report.ts     every scenario -> results/
-docs/                 MODEL.md and three ADRs
+docs/                 MODEL.md and four ADRs
 ```
 
 ## Running it
 
 ```
-make verify     # strict typecheck, 48 tests, report, determinism, secret scan
+make verify     # strict typecheck, 61 tests, report, determinism, secret scan
 make report     # regenerate every table above
 ```
 
@@ -87,3 +88,6 @@ make report     # regenerate every table above
   models; `docs/MODEL.md` says so.
 - **No concurrency.** `submit` loops; nothing here shows two workers racing on
   one operation.
+- **The vault mints nothing.** Token binding, portability and migration
+  verdicts are modelled and tested; the cryptography and provisioning behind a
+  real network token are not.

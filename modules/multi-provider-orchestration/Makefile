@@ -7,7 +7,8 @@ NPX  ?= npx
 PY   ?= python3
 
 TESTS = tests/capability.test.ts tests/routing.test.ts tests/failover.test.ts \
-        tests/health.test.ts tests/webhook.test.ts tests/negative-controls.test.ts
+        tests/health.test.ts tests/webhook.test.ts tests/tokens.test.ts \
+        tests/reconciliation.test.ts tests/negative-controls.test.ts
 
 .PHONY: help verify test typecheck report determinism secret-scan clean
 

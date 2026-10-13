@@ -39,6 +39,43 @@ is a guess with somebody's money behind it.
 | first declines | 50 | 50 | 0 | 0 | 0 |
 | first times out | 50 | 50 | 47 | 0 | 3 |
 
+## A token is provider-bound
+
+| token | presented to | verdict |
+|---|---|---|
+| provider (acquirer-a) | acquirer-a | ACCEPTED |
+| provider (acquirer-a) | acquirer-b | REFUSED_PROVIDER_BOUND |
+| network | acquirer-b | REFUSED_NOT_PROVISIONED |
+| network | acquirer-b (provisioned) | ACCEPTED |
+
+Portability is a capability of the **receiving** provider, not a property
+of the token. The same network token is refused by one provider and taken
+by the same provider once it is provisioned.
+
+## What a migration would actually take
+
+| token | from | to | verdict |
+|---|---|---|---|
+| provider (acquirer-a) | acquirer-a | acquirer-b | REQUIRES_RECOLLECTION |
+| network | acquirer-a | acquirer-b | REQUIRES_RECOLLECTION |
+| network | acquirer-a | acquirer-b (provisioned) | PORTABLE |
+
+A provider token is a reference into a vault the platform does not own.
+There is no export, so migration means collecting the instrument from the
+customer again -- a commercial process with a lead time, not a function call.
+
+## Reconciliation clears, or it escalates
+
+| provider | lookup | result | settled as |
+|---|---|---|---|
+| acquirer-a | yes | CLEARED | AUTHORIZED |
+| acquirer-b | no | ESCALATED | — |
+
+Both operations timed out after the provider had authorised. One could be
+asked and settled; the other cannot be settled by any code in this process,
+and becomes a named item owned by somebody. That difference is a capability,
+not an engineering shortcoming of the adapter.
+
 ## The double charge, with and without the guard
 
 Twenty-five operations where the first provider times out **having already

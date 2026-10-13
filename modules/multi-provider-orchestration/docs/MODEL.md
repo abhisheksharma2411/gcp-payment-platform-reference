@@ -18,6 +18,8 @@ interface must not erase.
 | Circuit breaking | `src/health.ts` | consecutive-failure opening, clock-driven half-open, hysteresis on close, stale observations discarded | no partial-open rate limiting, no per-method circuits |
 | Provider idempotency | `src/providers.ts` | a repeated key returns the first result where the contract honours keys; a timed-out call still happened at the provider | no key retention limit, no provider-side expiry |
 | Webhook normalisation | `src/webhook.ts` | de-duplication on `(provider, eventId)`, raw code preserved beside the normalised reason | no signature verification, no ordering, no retry schedule |
+| Token binding | `src/tokens.ts` | a provider token is refused by any provider that did not mint it; network-token portability is a capability of the receiver; migration verdicts | no cryptography, no provisioning protocol, no PCI scope boundary, no expiry |
+| Reconciliation | `src/orchestrator.ts` | an unknown outcome clears where the contract offers a lookup and escalates where it does not, carrying provider and provider-scoped key | no statement ingestion, no due-time scheduling, no partial settlement |
 
 ## Departures, stated plainly
 
@@ -41,12 +43,17 @@ so.
 **Health is per provider, not per method or region.** A provider failing only
 on one payment method opens for everything here.
 
-**No token vault.** `tokensPortable` appears in the capability contract and the
-article discusses token ownership, but the module stores no tokens and performs
-no migration. Nothing here demonstrates a vault.
+**The vault stores references and mints nothing.** `src/tokens.ts` models the
+part that causes incidents — which provider a token belongs to, who may be
+handed it, and what a migration would actually require — and tests it. It does
+not model the cryptography, the provisioning protocol or the PCI scope boundary
+behind a real network token. `tokensPortable` is a boolean standing in for a
+commercial and technical arrangement that takes months to put in place.
 
-**No settlement.** Article 19 owns settlement and reconciliation; this module
-ends at the authorization outcome and the reconciliation *handle*.
+**No settlement.** Article 19 owns settlement. This module reconciles an
+*authorization* outcome — cleared by lookup, or escalated with the handle a
+human needs — and stops there. Knowing a payment exists is not knowing the
+money arrived, and the two run on different schedules per provider.
 
 **Time is a parameter, never a clock.** Every function that needs the time
 takes `nowMs`. There is no `Date.now()` in `src/`, which is why `make report`
@@ -55,7 +62,7 @@ produces identical bytes on every run and `make determinism` enforces it.
 ## Reproducing
 
 ```
-make verify     # typecheck, 48 tests, report, determinism, secret scan
+make verify     # typecheck, 61 tests, report, determinism, secret scan
 make report     # regenerate results/
 ```
 

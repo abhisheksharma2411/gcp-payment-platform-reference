@@ -15,6 +15,7 @@ import { POLICY_2026_10_1 } from "../src/policy.ts";
 import { HealthRegistry } from "../src/health.ts";
 import { WebhookInbox } from "../src/webhook.ts";
 import { divergence } from "../src/capability.ts";
+import { planMigration, presentable } from "../src/tokens.ts";
 import type { AttemptOutcome, PaymentRequest } from "../src/types.ts";
 import type { OperationResult } from "../src/orchestrator.ts";
 
@@ -134,6 +135,53 @@ const controls = MUTATIONS.map((m) => {
   };
 });
 
+// --- E7: tokens, and what a migration would actually take ----------------
+
+const PROVIDER_TOKEN = {
+  vaultRef: "vault-1", reference: "tok_a_7781",
+  scheme: "provider" as const, mintedBy: "acquirer-a",
+};
+const NETWORK_TOKEN = {
+  vaultRef: "vault-1", reference: "ntk_4410",
+  scheme: "network" as const, mintedBy: "scheme-network",
+};
+// Labelled distinctly so the migration table cannot show two identical rows
+// with opposite verdicts. The difference between them is the provisioning.
+const PROVISIONED = {
+  ...ACQUIRER_B, provider: "acquirer-b (provisioned)", tokensPortable: true,
+};
+
+const tokenPresentation = [
+  { token: "provider (acquirer-a)", receiving: "acquirer-a", ...presentable(PROVIDER_TOKEN, ACQUIRER_A) },
+  { token: "provider (acquirer-a)", receiving: "acquirer-b", ...presentable(PROVIDER_TOKEN, ACQUIRER_B) },
+  { token: "network", receiving: "acquirer-b", ...presentable(NETWORK_TOKEN, ACQUIRER_B) },
+  { token: "network", receiving: "acquirer-b (provisioned)", ...presentable(NETWORK_TOKEN, PROVISIONED) },
+];
+
+const migrations = [
+  { token: "provider (acquirer-a)", ...planMigration(PROVIDER_TOKEN, ACQUIRER_A, ACQUIRER_B) },
+  { token: "network", ...planMigration(NETWORK_TOKEN, ACQUIRER_A, ACQUIRER_B) },
+  { token: "network", ...planMigration(NETWORK_TOKEN, ACQUIRER_A, PROVISIONED) },
+];
+
+// --- E8: reconciliation clears, or it escalates ---------------------------
+
+const reconciliations = (["USD", "SEK"] as const).map((currency) => {
+  const country = currency === "USD" ? "US" : "SE";
+  const o = build(() => "timeout");
+  const r = o.submit(req({ operationId: `rec-${currency}`, currency, country }), T0);
+  const provider = r.awaitingReconciliation?.provider ?? "none";
+  const outcome = o.reconcile(`rec-${currency}`, provider, T0 + 60_000);
+  const contract = provider === "acquirer-a" ? ACQUIRER_A : ACQUIRER_B;
+  return {
+    provider,
+    supportsQuery: contract.supportsQuery,
+    kind: outcome.kind,
+    settled: outcome.kind === "CLEARED" ? outcome.attempt.outcome : "—",
+    reason: outcome.kind === "ESCALATED" ? outcome.reason : "lookup answered",
+  };
+});
+
 // --- write ----------------------------------------------------------------
 
 const payload = {
@@ -145,6 +193,9 @@ const payload = {
   scenarios,
   doubleCharge,
   circuitUnderFlapping: flap,
+  tokenPresentation,
+  migrations,
+  reconciliations,
   negativeControls: controls,
 };
 writeFileSync(join(RESULTS, "orchestration.json"), JSON.stringify(payload, null, 2) + "\n");
@@ -180,6 +231,39 @@ L.push("|---|---:|---:|---:|---:|---:|");
 for (const s of scenarios) {
   L.push(`| ${s.scenario} | ${s.operations} | ${s.attempts} | ${s.authorizations} | ${s.failoversAllowed} | ${s.failoversBlocked} |`);
 }
+L.push("");
+L.push("## A token is provider-bound");
+L.push("");
+L.push("| token | presented to | verdict |");
+L.push("|---|---|---|");
+for (const t of tokenPresentation) L.push(`| ${t.token} | ${t.receiving} | ${t.verdict} |`);
+L.push("");
+L.push("Portability is a capability of the **receiving** provider, not a property");
+L.push("of the token. The same network token is refused by one provider and taken");
+L.push("by the same provider once it is provisioned.");
+L.push("");
+L.push("## What a migration would actually take");
+L.push("");
+L.push("| token | from | to | verdict |");
+L.push("|---|---|---|---|");
+for (const m of migrations) L.push(`| ${m.token} | ${m.from} | ${m.to} | ${m.verdict} |`);
+L.push("");
+L.push("A provider token is a reference into a vault the platform does not own.");
+L.push("There is no export, so migration means collecting the instrument from the");
+L.push("customer again -- a commercial process with a lead time, not a function call.");
+L.push("");
+L.push("## Reconciliation clears, or it escalates");
+L.push("");
+L.push("| provider | lookup | result | settled as |");
+L.push("|---|---|---|---|");
+for (const r of reconciliations) {
+  L.push(`| ${r.provider} | ${r.supportsQuery ? "yes" : "no"} | ${r.kind} | ${r.settled} |`);
+}
+L.push("");
+L.push("Both operations timed out after the provider had authorised. One could be");
+L.push("asked and settled; the other cannot be settled by any code in this process,");
+L.push("and becomes a named item owned by somebody. That difference is a capability,");
+L.push("not an engineering shortcoming of the adapter.");
 L.push("");
 L.push("## The double charge, with and without the guard");
 L.push("");

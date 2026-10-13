@@ -120,6 +120,74 @@
       "CLOSED"
     ]
   },
+  "tokenPresentation": [
+    {
+      "token": "provider (acquirer-a)",
+      "receiving": "acquirer-a",
+      "verdict": "ACCEPTED",
+      "reason": "minted by this provider"
+    },
+    {
+      "token": "provider (acquirer-a)",
+      "receiving": "acquirer-b",
+      "verdict": "REFUSED_PROVIDER_BOUND",
+      "reason": "token minted by acquirer-a; acquirer-b has no such record"
+    },
+    {
+      "token": "network",
+      "receiving": "acquirer-b",
+      "verdict": "REFUSED_NOT_PROVISIONED",
+      "reason": "acquirer-b is not provisioned for scheme-network network tokens"
+    },
+    {
+      "token": "network",
+      "receiving": "acquirer-b (provisioned)",
+      "verdict": "ACCEPTED",
+      "reason": "network token, acquirer-b (provisioned) provisioned"
+    }
+  ],
+  "migrations": [
+    {
+      "token": "provider (acquirer-a)",
+      "vaultRef": "vault-1",
+      "from": "acquirer-a",
+      "to": "acquirer-b",
+      "verdict": "REQUIRES_RECOLLECTION",
+      "reason": "acquirer-a token cannot be exported; the instrument must be collected again"
+    },
+    {
+      "token": "network",
+      "vaultRef": "vault-1",
+      "from": "acquirer-a",
+      "to": "acquirer-b",
+      "verdict": "REQUIRES_RECOLLECTION",
+      "reason": "network token, but acquirer-b is not provisioned for it"
+    },
+    {
+      "token": "network",
+      "vaultRef": "vault-1",
+      "from": "acquirer-a",
+      "to": "acquirer-b (provisioned)",
+      "verdict": "PORTABLE",
+      "reason": "network token, receiving provider provisioned"
+    }
+  ],
+  "reconciliations": [
+    {
+      "provider": "acquirer-a",
+      "supportsQuery": true,
+      "kind": "CLEARED",
+      "settled": "AUTHORIZED",
+      "reason": "lookup answered"
+    },
+    {
+      "provider": "acquirer-b",
+      "supportsQuery": false,
+      "kind": "ESCALATED",
+      "settled": "—",
+      "reason": "acquirer-b offers no lookup; settles on the next statement"
+    }
+  ],
   "negativeControls": [
     {
       "removed": "allow-failover-after-unknown",
